@@ -67,7 +67,6 @@
 ;;; with other types.
 
 (defn is-jsify-uri? [uri]
-  (prn "is jsify?:" uri)
   (re-matches #".*\.jsify" uri))
 
 (defn is-asset-uri? [uri]

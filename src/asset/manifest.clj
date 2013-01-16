@@ -52,8 +52,14 @@ namely a vector or list of file names or directory paths."
            (.append builder)))
     (assoc result :content builder)))
 
+(defn manifest-last-modified [file]
+  (apply max (map #(.lastModified %) (conj (manifest-files file) file))))
+
 (defrecord JSify [file]
+  jsify.asset.Util
+    (asset-last-modified [this] (manifest-last-modified (:file this)))
+
   jsify.asset.Asset
-  (read-asset [this] (compile-manifest (:file this))))
+    (read-asset [this] (compile-manifest (:file this))))
 
 (asset/register "jsify" map->JSify)

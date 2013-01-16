@@ -2,6 +2,10 @@
   (:require [jsify.asset :as asset]))
 
 (defrecord Static [file content]
+  jsify.asset.Util
+  (asset-last-modified [this]
+    (.lastModified (:file this)))
+
   jsify.asset.Asset
   (read-asset [this]
     (assoc this :content

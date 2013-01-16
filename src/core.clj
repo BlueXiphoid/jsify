@@ -1,11 +1,11 @@
 (ns jsify.core
   (:require 
     [fs]
-    [jsify.settings :as settings]
-    [jsify.asset :as asset]
-    [jsify.path :as path]
-    [jsify.cache :as cache]
-    [jsify.util :as util]
+    [jsify.settings   :as settings]
+    [jsify.asset      :as asset]
+    [jsify.path       :as path]
+    [jsify.cache      :as cache]
+    [jsify.util       :as util]
     [jsify.asset.javascript]
     [jsify.asset.manifest]
     [jsify.asset.static])
@@ -14,7 +14,8 @@
         [jsify.middleware.expires :only [wrap-file-expires-never]]
         [jsify.middleware.mime    :only [wrap-dieter-mime-types]]))
 
-(def latest-update (atom nil))
+(defonce latest-update (atom nil))
+(defonce latest-build (atom nil))
 
 (defn find-and-cache-asset [adrf]
   (when-let [file (path/find-asset adrf)]
@@ -26,31 +27,26 @@
             (:content %)))
         (cache/write-to-cache adrf))))
 
-(defn root-folder-last-modified [& x] (-> (settings/cache-root) (java.io.File.) (.lastModified)))
+(defn root-folder-last-modified [& [uri y]] 
+  (asset/asset-last-modified (asset/make-asset (path/find-asset (path/uri->adrf uri)))))
 
-(defn root-folder-changed? []
+(defn root-folder-changed? [uri]
     (or 
       (nil? @latest-update)
-      (not= @latest-update (root-folder-last-modified))))
+      (not= @latest-update (root-folder-last-modified uri))))
 
 (defn send-new-uri [app req uri]
-  (prn "New uri: " uri)
   (app (assoc req :uri uri)))
 
 (defn build-js [app req uri]
-  (if (root-folder-changed?) ; No need to rebuild the javascript if nothing changed, just send the existing build
+  (if (root-folder-changed? uri) ; No need to rebuild the javascript if nothing changed, just send the existing build
     (if-let [new-uri (-> uri path/uri->adrf find-and-cache-asset)]
       (let [new-uri (path/rewrite-uri new-uri)]
-        (prn "Source changed, creating new build...")
-        (swap! latest-update (fn [x] (root-folder-last-modified)))
+        (swap! latest-build assoc (keyword (path/uri->adrf uri)) new-uri)
+        (swap! latest-update #(root-folder-last-modified uri %))
         (send-new-uri app req new-uri))
       (app req))
-    (send-new-uri app req 
-      (-> 
-        (clojure.string/replace uri #".jsify$" ".js")
-        (path/uri->adrf)
-        (path/find-lib-by-name)
-        (path/rewrite-uri)))))
+    (send-new-uri app req (get @latest-build (keyword (path/uri->adrf uri))))))
 
 (defn jsify-builder [app & [options]]
   (fn [req]
@@ -79,7 +75,7 @@
   (settings/with-options options
     (if (settings/production?)
       (memoize (path/find-lib-by-name lib))
-      (str lib))))
+      lib)))
 
 (defn jsify-init [options]
   (settings/with-options options
