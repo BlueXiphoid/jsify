@@ -36,9 +36,10 @@ For ring
 (-> app (jsify/jsify-middleware jsify-settings))
 ```
 
-In your html simply add
-```html
-<script src="/js/app.jsify"></script>
+To get the link to the output simply use:
+
+```clojure
+(jsify/link-to-asset "app.jsify" jsify-settings)
 ```
     
 resources/private/js/app.jsify will look like this:
