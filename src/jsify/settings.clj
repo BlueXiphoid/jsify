@@ -7,7 +7,8 @@
    :cache-root "resources/public/js"
    :cache-mode :development
    :log-level  :normal
-   :precompile false})
+   :precompile false
+   :remove-old-version false})
 
 (defmacro with-options [options & body]
   `(binding [*settings* (merge *settings* ~options)]
@@ -30,3 +31,6 @@
 
 (defn precompile? []
   (-> *settings* :precompile boolean))
+
+(defn remove-old-version? []
+  (-> *settings* :remove-old-version boolean))

@@ -1,4 +1,4 @@
-(defproject jsify "0.1.0"
+(defproject jsify "0.1.1-SNAPSHOT"
   :description "JS merge and minifying middleware for clojure. Based on dieter."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

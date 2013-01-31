@@ -43,7 +43,6 @@ namely a vector or list of file names or directory paths."
   (let [builder (string-builder)
         target-name (s/replace file #".jsify$" ".js")
         result (asset/make-asset (io/file target-name))]
-        (prn target-name result)
     (doseq [mf (manifest-files file)]
       (->> mf
            asset/make-asset

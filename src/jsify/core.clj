@@ -10,15 +10,16 @@
     [jsify.asset.manifest]
     [jsify.asset.static])
   (:use [ring.middleware.file      :only [wrap-file]]
-        [ring.middleware.file-info :only [wrap-file-info]]
-        [jsify.middleware.expires :only [wrap-file-expires-never]]
-        [jsify.middleware.mime    :only [wrap-dieter-mime-types]]))
+        [ring.middleware.file-info :only [wrap-file-info]]))
 
 (defonce latest-update (atom nil))
 (defonce latest-build (atom nil))
 
 (defn find-and-cache-asset [adrf]
+  "Finds the asset and creates the file."
   (when-let [file (path/find-asset adrf)]
+    (if (settings/remove-old-version?)
+      (cache/remove-old-version file adrf))
     (-> file
         (asset/make-asset)
         (asset/read-asset)
@@ -28,18 +29,22 @@
         (cache/write-to-cache adrf))))
 
 (defn root-folder-last-modified [& [uri y]] 
+  "Gets the last-modified date of the latest updated file used by this asset."
   (asset/asset-last-modified (asset/make-asset (path/find-asset (path/uri->adrf uri)))))
 
 (defn root-folder-changed? [uri]
+  "Checks if the root folder has changed."
     (or 
       (nil? @latest-update)
       (not= @latest-update (root-folder-last-modified uri))))
 
 (defn send-new-uri [app req uri]
+  "Will update the uri according to the real file's name."
   (app (assoc req :uri uri)))
 
 (defn build-js [app req uri]
-  (if (root-folder-changed? uri) ; No need to rebuild the javascript if nothing changed, just send the existing build
+  "Builds the js. Or if nothing changed will return the current js file."
+  (if (root-folder-changed? uri)
     (if-let [new-uri (-> uri path/uri->adrf find-and-cache-asset)]
       (let [new-uri (path/rewrite-uri new-uri)]
         (swap! latest-build assoc (keyword (path/uri->adrf uri)) new-uri)
@@ -49,6 +54,7 @@
     (send-new-uri app req (get @latest-build (keyword (path/uri->adrf uri))))))
 
 (defn jsify-builder [app & [options]]
+  "Delegates the jsify middleware"
   (fn [req]
     (settings/with-options options
       (let [uri (-> req :uri)]
@@ -61,20 +67,20 @@
 (def known-mime-types {:hbs "text/javascript"})
 
 (defn jsify-middleware
+  "The actual middleware"
   [app & [options]]
   (settings/with-options options
     (if-not (settings/production?)
       (-> app
           (wrap-file (settings/cache-root))
           (jsify-builder options)
-          (wrap-file-info known-mime-types)
-          (wrap-dieter-mime-types)
           (wrap-file-info known-mime-types)))))
 
 (defn link-to-asset [lib & [options]]
+  "Returns a path to the middleware"
   (settings/with-options options
     (if (settings/production?)
-      (memoize (path/find-lib-by-name lib))
+      (memoize (path/find-lib-by-name (clojure.string/replace lib #".jsify" ".js")))
       lib)))
 
 (defn jsify-init [options]

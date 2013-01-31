@@ -1,5 +1,5 @@
 (ns jsify.cache
-  (:require [clojure.string :as cstr]
+  (:require 
             [jsify.settings :as settings]
             [jsify.path :as path]
             [clojure.java.io :as io])
@@ -30,14 +30,6 @@
     (str fname "-" (md5 content) "." ext)
     (str path "-" (md5 content))))
 
-(defn cached-file-path
-  "given the adrf, generate the filename of where the file
-will be cached. Cache is rooted at cache-root/assets/ so that
-static file middleware can be rooted at cache-root"
-  [adrf content]
-  (add-md5 (path/build-final-name (settings/cache-root) adrf)
-           content))
-
 (defn write-to-cache [content adrf]
   (let [
     final-name (path/build-final-name adrf (md5 content))
@@ -46,16 +38,12 @@ static file middleware can be rooted at cache-root"
     (write-file content dest)
     final-name))
 
-
-(defonce cached-uris (atom {}))
-
-(defn add-cached-uri [uri new-uri]
-  (swap! cached-uris assoc uri new-uri))
-
-(defn cache-busting-uri [uri]
-  "in production mode, append a md5 of the file contents to the file path"
-  (if (settings/production?)
-    (or (get @cached-uris uri)
-        ;; if we dont have it, use the date in lieu
-        (add-md5 uri (str (java.util.Date.))))
-    uri)) ;; always reload
+(defn remove-old-version [file filename]
+  (while
+    (let [lib-path (path/find-lib-by-name (clojure.string/replace filename #".jsify" ".js"))]
+      (if-not (nil? lib-path)
+        (do
+          (prn "Deleting old version of " filename ": " lib-path)
+          (io/delete-file (str (settings/cache-root) lib-path))))
+      (not (nil? lib-path))
+      )))
