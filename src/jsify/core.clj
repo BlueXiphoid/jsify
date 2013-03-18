@@ -83,8 +83,6 @@
       (memoize (path/find-lib-by-name (clojure.string/replace lib #".jsify" ".js")))
       lib)))
 
-(defn jsify-init [options]
+(defn pre-build [lib options]
   (settings/with-options options
-    (if (settings/precompile?)
-      nil
-      #_(find-and-cache-asset all-jsify-files-in-asset-root))))
+    (find-and-cache-asset (-> lib path/uri->adrf find-and-cache-asset))))
