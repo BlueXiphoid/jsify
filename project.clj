@@ -1,9 +1,9 @@
-(defproject jsify "0.1.1-SNAPSHOT"
+(defproject jsify "0.1.2"
   :description "JS merge and minifying middleware for clojure. Based on dieter."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "http://github.com/bluexiphoid/jsify"
-  :dependencies [[ring "1.0.1"]
+  :dependencies [[ring "1.1.8"]
                  [fs "0.11.1"]
                  [clj-time "0.4.4"]
                  [com.google.javascript/closure-compiler "r1592"]
