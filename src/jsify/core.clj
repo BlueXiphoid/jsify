@@ -10,7 +10,8 @@
     [jsify.asset.manifest]
     [jsify.asset.static])
   (:use [ring.middleware.file      :only [wrap-file]]
-        [ring.middleware.file-info :only [wrap-file-info]]))
+        [ring.middleware.file-info :only [wrap-file-info]]
+        [ring.util.response]))
 
 (defonce latest-update (atom nil))
 (defonce latest-build (atom nil))
@@ -40,13 +41,13 @@
 
 (defn send-new-uri [app req uri]
   "Will update the uri according to the real file's name."
-  (app (assoc req :uri uri)))
+  (file-response uri {:root (settings/cache-root)}))
 
 (defn build-js [app req uri]
   "Builds the js. Or if nothing changed will return the current js file."
   (if (root-folder-changed? uri)
     (if-let [new-uri (-> uri path/uri->adrf find-and-cache-asset)]
-      (let [new-uri (path/rewrite-uri new-uri)]
+      (do
         (swap! latest-build assoc (keyword (path/uri->adrf uri)) new-uri)
         (swap! latest-update #(root-folder-last-modified uri %))
         (send-new-uri app req new-uri))
