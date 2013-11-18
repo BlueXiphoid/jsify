@@ -7,7 +7,7 @@ JS merge and minifier
 
 Add the following dependency to your `project.clj` file:
 
-    [jsify "0.1.1-SNAPSHOT"]
+    [jsify "0.1.4"]
 
 ## Example
 
