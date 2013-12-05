@@ -77,11 +77,16 @@
           (jsify-builder options)
           (wrap-file-info known-mime-types)))))
 
+(defn get-latest-cache [lib]
+  (path/find-lib-by-name (clojure.string/replace lib #".jsify" ".js")))
+
+(def latest-cache (memoize get-latest-cache))
+
 (defn link-to-asset [lib & [options]]
   "Returns a path to the middleware"
   (settings/with-options options
     (if (settings/production?)
-      (memoize (path/find-lib-by-name (clojure.string/replace lib #".jsify" ".js")))
+      (latest-cache lib)
       lib)))
 
 (defn pre-build [lib options]
