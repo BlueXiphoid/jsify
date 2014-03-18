@@ -58,7 +58,7 @@
 
 (defn find-asset [adrf]
   {:post [(or (nil? %) (-> % io/file .exists))]}
-  (find-file (str (settings/asset-root) "/" adrf)))
+  (find-file adrf :root (settings/asset-root)))
 
 (defn rewrite-uri [new-uri]
    (str "/" new-uri))
