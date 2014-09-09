@@ -1,6 +1,6 @@
-(ns dieter.rhino
+(ns jsify.rhino
   (:require [clojure.java.io :as io]
-            [dieter.pools :as pools])
+            [jsify.pools :as pools])
   (:import [org.mozilla.javascript Context NativeObject]))
 
 

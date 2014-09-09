@@ -1,6 +1,5 @@
 (ns jsify.core
-  (:require 
-    [fs]
+  (:require
     [jsify.settings   :as settings]
     [jsify.asset      :as asset]
     [jsify.path       :as path]
@@ -29,13 +28,13 @@
             (:content %)))
         (cache/write-to-cache adrf))))
 
-(defn root-folder-last-modified [& [uri y]] 
+(defn root-folder-last-modified [& [uri y]]
   "Gets the last-modified date of the latest updated file used by this asset."
   (asset/asset-last-modified (asset/make-asset (path/find-asset (path/uri->adrf uri)))))
 
 (defn root-folder-changed? [uri]
   "Checks if the root folder has changed."
-    (or 
+    (or
       (nil? @latest-update)
       (not= @latest-update (root-folder-last-modified uri))))
 
@@ -59,8 +58,8 @@
   (fn [req]
     (settings/with-options options
       (let [uri (-> req :uri)]
-        (if (and 
-              (path/is-jsify-uri? uri) 
+        (if (and
+              (path/is-jsify-uri? uri)
               (not (settings/production?)))
           (build-js app req uri)
         (app req))))))

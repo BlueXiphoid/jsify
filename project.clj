@@ -4,7 +4,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :url "http://github.com/bluexiphoid/jsify"
   :dependencies [[ring "1.1.8"]
-                 [fs "0.11.1"]
+                 [fs "1.3.3"]
                  [clj-time "0.4.4"]
                  [com.google.javascript/closure-compiler "v20131014"]
                  [clj-v8 "0.1.4"]

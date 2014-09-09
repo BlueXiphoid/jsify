@@ -1,4 +1,4 @@
-(ns dieter.pools)
+(ns jsify.pools)
 
 ;;; Pool of scopes, to be used one per preprocessor
 

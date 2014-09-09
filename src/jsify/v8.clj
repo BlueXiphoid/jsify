@@ -1,14 +1,21 @@
 (ns jsify.v8
   (:require [v8.core :as v8]
             [clojure.java.io :as io]
-            [fs]
             [clojure.string :as str]
-            [jsify.settings :as settings]))
+            [jsify.settings :as settings])
+  (:import java.io.File))
+
+(def separator File/separator)
+
+(defn join
+"Join parts of path.\n\t(join [\"a\" \"b\"]) -> \"a/b\"."
+[& parts]
+  (apply str (interpose separator parts)))
 
 (defn load-vendor [files]
   (apply str (map (fn [f]
                     (->> f
-                         (fs/join "vendor")
+                         (join "vendor")
                          io/resource
                          io/reader
                          line-seq

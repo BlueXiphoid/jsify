@@ -3,9 +3,16 @@
             [clojure.string :as s]
             [jsify.asset :as asset]
             [jsify.path :as path]
-            [fs])
+            [fs.core :as fs])
   (:use [jsify.util :only [slurp-into string-builder]])
-  (:import [java.io FileReader PushbackReader FileNotFoundException]))
+  (:import [java.io File FileReader PushbackReader FileNotFoundException]))
+
+(def *separator* File/separator)
+
+(defn join
+"Join parts of path.\n\t(join [\"a\" \"b\"]) -> \"a/b\"."
+[& parts]
+  (apply str (interpose *separator* parts)))
 
 (defn load-manifest
   "a manifest file must be a valid clojure data structure,
@@ -16,9 +23,9 @@ namely a vector or list of file names or directory paths."
 
 (defn recursive-files [dir]
   (->> dir
-       fs/iterdir
+       fs/iterate-dir
        (map (fn [[root _ files]]
-              (doall (map #(fs/join root %)
+              (doall (map #(join root %)
                           (sort files))))))) ;; sort because of file-ordering bugs
 
 (defn manifest-files
